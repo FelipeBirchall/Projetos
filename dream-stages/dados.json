@@ -1,0 +1,49 @@
+{
+  "cards": [
+    {
+      "company": "Lumen Labs",
+      "role": "Estagio em Design de Produto",
+      "description": "Equipe pequena com foco em pesquisa e prototipacao rapida para apps educacionais.",
+      "location": "Av. das Hortensias, 1450 - Sao Paulo",
+      "link": "https://lumenlabs.dev/vagas/estagio-design",
+      "salary": "R$ 1.900",
+      "status": "Inscrito"
+    },
+    {
+      "company": "Atlas Tech",
+      "role": "Estagio em Front-end",
+      "description": "Projeto de dashboard para startups, com foco em acessibilidade e performance.",
+      "location": "Rua do Porto, 88 - Belo Horizonte",
+      "link": "https://atlas.tech/carreiras/front-end",
+      "salary": "R$ 2.200",
+      "status": "Andamento"
+    },
+    {
+      "company": "Aurora Finance",
+      "role": "Estagio em Analise de Dados",
+      "description": "Rotina com dados financeiros, SQL e visualizacoes para lideranca.",
+      "location": "Rua Alvorada, 302 - Recife",
+      "link": "https://aurorafinance.com/vagas/estagio-dados",
+      "salary": "R$ 2.000",
+      "status": "Aceito"
+    },
+    {
+      "company": "DTI Digital",
+      "role": "Desenvolvedor de Software",
+      "description": "Desenvolvedor de Software com as tecnologias fullstack javascript.",
+      "location": "Rua Alameda, bairro Funcionarios",
+      "link": "https://slaoqkkkk",
+      "salary": "R$1.200",
+      "status": "Andamento"
+    },
+    {
+      "company": "SYDLE",
+      "role": "sla oq",
+      "description": "asdfghjjhgfdsadf",
+      "location": "dfgfdssdfg",
+      "link": "dddddddd",
+      "salary": "1.500",
+      "status": "Aceito"
+    }
+  ]
+}
