@@ -3,9 +3,42 @@
 import { useState } from "react";
 import { api, soltarConfete } from "@/lib/cliente";
 import { Aviso } from "./Comuns";
-import { IconeOlhoFechado, IconePresente } from "./Icones";
+import { IconeArvore, IconeOlhoFechado } from "./Icones";
 
 type Amigo = { nome: string; listaDesejos: string[] };
+
+/** A lista de desejos de quem você tirou, escrita como uma cartinha ao Papai Noel. */
+function CartaAoPapaiNoel({ nome, itens }: { nome: string; itens: string[] }) {
+  return (
+    <article className="carta-noel" aria-label={`Cartinha de ${nome} para o Papai Noel`}>
+      <span className="carta-noel-selo" aria-hidden="true">
+        <IconeArvore tamanho={30} />
+        <small>Polo Norte</small>
+      </span>
+      <p className="carta-noel-saudacao">Querido Papai Noel,</p>
+      {itens.length > 0 ? (
+        <>
+          <p>Este ano eu me comportei muito bem (quase sempre!) e queria fazer um pedido especial. Eu gostaria de ganhar de presente:</p>
+          <ul className="carta-noel-lista">
+            {itens.map((item, i) => (
+              <li key={i} style={{ "--i": i + 8 } as React.CSSProperties}>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p>Se não der para trazer tudo, qualquer um deles já vai deixar o meu Natal mais feliz!</p>
+        </>
+      ) : (
+        <p>
+          Ainda estou pensando no que pedir este ano... Prometo escrever a minha lista antes da troca de presentes!
+          Enquanto isso, mando um abraço quentinho para você e para as renas.
+        </p>
+      )}
+      <p className="carta-noel-despedida">Com carinho,</p>
+      <p className="carta-noel-assinatura">{nome}</p>
+    </article>
+  );
+}
 
 export default function Presente({ grupoId, jaVisualizou }: { grupoId: string; jaVisualizou: boolean }) {
   const [amigo, setAmigo] = useState<Amigo | null>(null);
@@ -77,19 +110,7 @@ export default function Presente({ grupoId, jaVisualizou }: { grupoId: string; j
           </p>
           <p className="texto-suave">Shhh! Não conte pra ninguém.</p>
 
-          <h3>Lista de desejos de {amigo.nome}</h3>
-          {amigo.listaDesejos.length === 0 ? (
-            <Aviso tipo="info">{amigo.nome} ainda não montou a lista de desejos. Volte aqui mais perto da troca!</Aviso>
-          ) : (
-            <ul className="lista-desejos">
-              {amigo.listaDesejos.map((item, i) => (
-                <li key={i} style={{ "--i": i + 8 } as React.CSSProperties}>
-                  <IconePresente tamanho={22} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <CartaAoPapaiNoel nome={amigo.nome} itens={amigo.listaDesejos} />
           <div className="acoes" style={{ justifyContent: "center" }}>
             <button className="botao contorno pequeno" onClick={() => setAmigo(null)}>
               <IconeOlhoFechado tamanho={18} /> Esconder de novo

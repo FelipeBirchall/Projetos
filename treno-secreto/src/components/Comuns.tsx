@@ -11,7 +11,7 @@ import {
   IconeCheck,
   IconeEstrela,
   IconeGorro,
-  IconeSaco,
+  IconeEtiquetaPreco,
   IconeTreno,
 } from "./Icones";
 
@@ -101,7 +101,7 @@ export function DetalhesGrupo({ grupo }: { grupo: InfoGrupo }) {
       </span>
       {grupo.valorSugerido && (
         <span className="etiqueta" style={atraso()}>
-          <IconeSaco tamanho={18} /> {grupo.valorSugerido}
+          <IconeEtiquetaPreco tamanho={18} /> {grupo.valorSugerido}
         </span>
       )}
       {grupo.prazoCadastro && grupo.status === "aberto" && (
