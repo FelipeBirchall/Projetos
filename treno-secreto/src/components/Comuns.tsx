@@ -12,6 +12,8 @@ import {
   IconeEstrela,
   IconeGorro,
   IconeEtiquetaPreco,
+  IconeOlhoAberto,
+  IconeOlhoFechado,
   IconeTreno,
 } from "./Icones";
 
@@ -164,5 +166,25 @@ export function LinkCopiavel({
       </div>
       {dica && <small className="texto-suave">{dica}</small>}
     </div>
+  );
+}
+
+/** Campo de senha com botão de olho para mostrar/ocultar o que foi digitado. */
+export function CampoSenha(props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [visivel, setVisivel] = useState(false);
+  return (
+    <span className="campo-senha">
+      <input {...props} type={visivel ? "text" : "password"} autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+      <button
+        type="button"
+        className="mostrar-senha"
+        onClick={() => setVisivel((v) => !v)}
+        aria-label={visivel ? "Ocultar senha" : "Mostrar senha"}
+        aria-pressed={visivel}
+        title={visivel ? "Ocultar senha" : "Mostrar senha"}
+      >
+        {visivel ? <IconeOlhoFechado tamanho={20} /> : <IconeOlhoAberto tamanho={20} />}
+      </button>
+    </span>
   );
 }
