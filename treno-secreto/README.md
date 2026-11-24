@@ -20,9 +20,28 @@ npm run build
 npm start
 ```
 
-Os dados ficam em `data/grupos/<id>.json` (pasta ignorada pelo git). Para mudar o local, defina a variável `DATA_DIR`.
+## Onde os dados ficam
 
-> ⚠️ Como os dados ficam em arquivo, hospede em um servidor com disco persistente (uma VPS ou o seu próprio PC). Na Vercel e em serviços parecidos o disco é apagado a cada deploy, e os grupos se perderiam.
+O site escolhe o armazenamento automaticamente:
+
+| Ambiente | Armazenamento |
+| --- | --- |
+| Seu PC / testes | Um arquivo JSON por grupo em `data/grupos/` (pasta ignorada pelo git; mude com `DATA_DIR`). |
+| Vercel | Upstash Redis: o mesmo JSON de cada grupo, guardado como um registro. Ele é apagado sozinho 90 dias depois da data da troca. |
+
+Nos dois casos, as gravações usam controle de versão: se duas pessoas alteram o mesmo grupo ao mesmo tempo (mesmo em servidores diferentes), uma delas relê e tenta de novo, sem perder nada.
+
+## Publicar na Vercel
+
+1. Em [vercel.com](https://vercel.com), crie um projeto importando este repositório do GitHub.
+2. Em **Root Directory**, escolha `treno-secreto`. O framework (Next.js) é detectado sozinho.
+3. Na aba **Storage** do projeto, crie um banco **Upstash Redis** (o plano gratuito basta) e conecte ao projeto. Isso cria as variáveis `KV_REST_API_URL` e `KV_REST_API_TOKEN` (ou `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`).
+4. Faça um novo deploy (**Deployments → Redeploy**) para o site enxergar as variáveis.
+5. *(Opcional)* Crie a variável `SESSION_SECRET` com um texto aleatório longo. Sem ela, o segredo da sessão é derivado do token do Upstash.
+
+Sem o Upstash conectado, o site avisa "Armazenamento não configurado" em vez de gravar em disco temporário e perder dados.
+
+> Trocar o `SESSION_SECRET` ou o token do Upstash só desconecta quem estiver logado. Os grupos e os sorteios continuam intactos.
 
 ## Testes
 
@@ -30,12 +49,13 @@ Os dados ficam em `data/grupos/<id>.json` (pasta ignorada pelo git). Para mudar 
 npm test
 ```
 
-São 61 testes automatizados (Vitest), divididos em quatro arquivos dentro de `testes/`:
+São 71 testes automatizados (Vitest), divididos em cinco arquivos dentro de `testes/`:
 
 - `sorteio.test.ts`: ninguém tira a si mesmo, o sorteio forma um ciclo único, casais nunca se tiram, sorteios impossíveis são detectados e não há viés estatístico.
 - `cripto.test.ts`: só a senha certa abre o resultado, um participante não abre o de outro e nada fica em texto puro.
 - `regras.test.ts`: todas as regras de negócio (RN01–RN21), incluindo prazo, bloqueio por tentativas, fluxo de senha esquecida, cadastros simultâneos e a verificação de que o JSON não revela os pares.
 - `api.test.ts`: as rotas HTTP com cookies reais, cobrindo cookie adulterado, expirado ou de outro grupo, token de organizador errado, logout e respostas sem vazamentos.
+- `armazenamento.test.ts`: o modo Redis da Vercel, com um Redis simulado que força gravações simultâneas, o controle de versão e a configuração sem Upstash.
 
 Os testes usam uma pasta temporária e nunca mexem em `data/`.
 
@@ -45,7 +65,7 @@ Os testes usam uma pasta temporária e nunca mexem em `data/`.
 2. A senha gera um par de chaves RSA. O JSON guarda a **chave pública** e a **chave privada cifrada com a senha**.
 3. No sorteio, o amigo secreto de cada pessoa é cifrado com a chave pública dela. O resultado em texto puro nunca é gravado.
 4. Para ver o resultado, a pessoa entra com a senha, que destrava a própria chave privada. Assim só o **seu** amigo é revelado.
-5. O cookie de sessão guarda a chave derivada da senha, lacrada com AES-GCM e um segredo do servidor (`SESSION_SECRET` ou o arquivo `data/.segredo-sessao`, gerado automaticamente).
+5. O cookie de sessão guarda a chave derivada da senha, lacrada com AES-GCM e um segredo do servidor (`SESSION_SECRET`, um valor derivado do token do Upstash ou o arquivo `data/.segredo-sessao`, gerado automaticamente).
 
 ## Regras de negócio
 

@@ -34,6 +34,8 @@ export type Grupo = {
   participantes: Participante[];
   /** Pares que não podem se tirar (casais). Vale nos dois sentidos. */
   exclusoes: [string, string][];
+  /** Aumenta a cada gravação; impede que duas gravações simultâneas se sobrescrevam. */
+  versao?: number;
 };
 
 export class ErroNegocio extends Error {

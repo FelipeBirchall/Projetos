@@ -2,16 +2,25 @@ import crypto from "crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import type { NextRequest, NextResponse } from "next/server";
-import { PASTA_DADOS } from "./armazenamento";
+import { credenciaisRedis, PASTA_DADOS } from "./armazenamento";
 
 const DURACAO_MS = 12 * 60 * 60 * 1000; // 12 horas
 
 let segredoEmCache: Buffer | null = null;
 
-/** Segredo do servidor para lacrar o cookie. Vem do .env ou é gerado uma vez em data/. */
+/**
+ * Segredo do servidor para lacrar o cookie, nesta ordem:
+ * 1. SESSION_SECRET (variável de ambiente);
+ * 2. derivado do token do Upstash (Vercel), que já é secreto e estável;
+ * 3. gerado uma vez e guardado em data/ (uso local).
+ */
 function segredo() {
   if (segredoEmCache) return segredoEmCache;
   let bruto = process.env.SESSION_SECRET;
+  const redis = credenciaisRedis();
+  if (!bruto && redis) {
+    bruto = crypto.createHmac("sha256", redis.token).update("treno-secreto:sessao").digest("hex");
+  }
   if (!bruto) {
     const arquivo = path.join(PASTA_DADOS, ".segredo-sessao");
     if (existsSync(arquivo)) {
