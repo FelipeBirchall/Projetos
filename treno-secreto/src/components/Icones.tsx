@@ -179,6 +179,16 @@ export function IconeOlhoFechado(p: P) {
   );
 }
 
+export function IconeOlhoAberto(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.2" fill="currentColor" />
+      <circle cx="13.2" cy="10.8" r="1" fill="#fff" />
+    </Svg>
+  );
+}
+
 export function IconeEstrela(p: P) {
   return (
     <Svg {...p}>

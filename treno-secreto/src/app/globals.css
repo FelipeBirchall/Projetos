@@ -782,6 +782,46 @@ a {
   color: var(--tinta-suave);
 }
 
+/* campo de senha com botão de olho */
+.campo-senha {
+  position: relative;
+  display: block;
+}
+
+.campo-senha input {
+  padding-right: 50px;
+}
+
+.mostrar-senha {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.mostrar-senha:hover,
+.mostrar-senha[aria-pressed="true"] {
+  background: #f3e8d6;
+  color: var(--verde);
+}
+
+.mostrar-senha:focus-visible {
+  outline: 2px solid var(--verde);
+  outline-offset: 1px;
+}
+
 input,
 select,
 textarea {

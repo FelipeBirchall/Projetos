@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Aviso, AvisoSigilo, Cabecalho, Carregando, DetalhesGrupo } from "@/components/Comuns";
+import { Aviso, AvisoSigilo, Cabecalho, CampoSenha, Carregando, DetalhesGrupo } from "@/components/Comuns";
 import { Avatar, Enfeite, Floco, IconeArvore, IconeChave, IconeGorro, IconePresente } from "@/components/Icones";
 import ListaDesejosEditor from "@/components/ListaDesejosEditor";
 import Presente from "@/components/Presente";
@@ -217,9 +217,8 @@ function Acesso({ grupo, aoEntrar }: { grupo: InfoGrupo; aoEntrar: () => void })
           </label>
           <label className="campo">
             <span>{aba === "cadastrar" ? "Crie uma senha" : "Sua senha"}</span>
-            <input
+            <CampoSenha
               required
-              type="password"
               minLength={4}
               maxLength={100}
               autoComplete={aba === "cadastrar" ? "new-password" : "current-password"}
@@ -231,9 +230,8 @@ function Acesso({ grupo, aoEntrar }: { grupo: InfoGrupo; aoEntrar: () => void })
           {aba === "cadastrar" && (
             <label className="campo">
               <span>Repita a senha</span>
-              <input
+              <CampoSenha
                 required
-                type="password"
                 autoComplete="new-password"
                 value={confirmacao}
                 onChange={(e) => setConfirmacao(e.target.value)}
