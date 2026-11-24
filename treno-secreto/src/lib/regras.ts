@@ -44,10 +44,37 @@ const porNome = (a: { nome: string }, b: { nome: string }) => a.nome.localeCompa
 
 // ---------------------------------------------------------------- grupo
 
+export const VALOR_MAXIMO_PERMITIDO = 100_000; // R$ 100 mil: trava contra digitação errada
+
+/**
+ * Converte o valor digitado em centavos. Aceita número ou texto como "50", "50,90",
+ * "R$ 1.000,00". Vazio = sem limite (null).
+ */
+export function paraCentavos(valor: unknown, rotulo: string): number | null {
+  if (valor === null || valor === undefined) return null;
+  let n: number;
+  if (typeof valor === "number") {
+    n = valor;
+  } else if (typeof valor === "string") {
+    let t = valor.replace(/R\$/i, "").replace(/\s/g, "");
+    if (!t) return null;
+    if (t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); // "1.000,50" → "1000.50"
+    else if (/^-?\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, ""); // "1.000" → mil reais
+    n = /^-?\d+(\.\d{1,2})?$/.test(t) ? Number(t) : NaN;
+  } else {
+    n = NaN;
+  }
+  if (!Number.isFinite(n)) throw new ErroNegocio(400, `${rotulo} inválido. Use só números, como 50 ou 49,90.`);
+  if (n < 0) throw new ErroNegocio(400, `${rotulo} não pode ser negativo.`);
+  if (n > VALOR_MAXIMO_PERMITIDO) throw new ErroNegocio(400, `${rotulo} está alto demais.`);
+  return Math.round(n * 100);
+}
+
 export async function criarNovoGrupo(dados: {
   nome: string;
   dataTroca: string;
-  valorSugerido: string;
+  valorMinimo: unknown;
+  valorMaximo: unknown;
   prazoCadastro: string;
 }) {
   if (dados.nome.length < 2 || dados.nome.length > 60) {
@@ -60,14 +87,19 @@ export async function criarNovoGrupo(dados: {
   if (dados.prazoCadastro && dados.prazoCadastro > dados.dataTroca) {
     throw new ErroNegocio(400, "O prazo de cadastro precisa ser antes da data da troca.");
   }
-  if (dados.valorSugerido.length > 30) throw new ErroNegocio(400, "Valor sugerido muito longo.");
+  const valorMinimo = paraCentavos(dados.valorMinimo, "Valor mínimo");
+  const valorMaximo = paraCentavos(dados.valorMaximo, "Valor máximo");
+  if (valorMinimo !== null && valorMaximo !== null && valorMinimo > valorMaximo) {
+    throw new ErroNegocio(400, "O valor mínimo não pode ser maior que o valor máximo.");
+  }
 
   const adminToken = novoToken();
   const grupo: Grupo = {
     id: novoId(),
     nome: dados.nome,
     dataTroca: dados.dataTroca,
-    valorSugerido: dados.valorSugerido,
+    valorMinimo,
+    valorMaximo,
     prazoCadastro: dados.prazoCadastro || null,
     criadoEm: new Date().toISOString(),
     adminTokenHash: hashToken(adminToken), // RN03 — só guardamos o hash do link do organizador
@@ -86,7 +118,9 @@ export function infoPublica(g: Grupo) {
     id: g.id,
     nome: g.nome,
     dataTroca: g.dataTroca,
-    valorSugerido: g.valorSugerido,
+    valorMinimo: g.valorMinimo ?? null,
+    valorMaximo: g.valorMaximo ?? null,
+    valorSugerido: g.valorSugerido ?? "", // grupos antigos
     prazoCadastro: g.prazoCadastro,
     status: g.status,
     cadastroAberto: g.status === "aberto" && !prazoEncerrado(g),

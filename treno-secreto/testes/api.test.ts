@@ -59,7 +59,7 @@ describe("API HTTP — fluxo completo", () => {
   beforeAll(async () => {
     const r = await organizador.chamar(rotaGrupos.POST as Handler, {}, {
       metodo: "POST",
-      corpo: { nome: "Natal HTTP", dataTroca: "2099-12-24", valorSugerido: "R$ 80", prazoCadastro: "" },
+      corpo: { nome: "Natal HTTP", dataTroca: "2099-12-24", valorMinimo: "50", valorMaximo: "80", prazoCadastro: "" },
     });
     expect(r.status).toBe(201);
     id = r.json.id;
@@ -166,7 +166,7 @@ describe("API HTTP — fluxo completo", () => {
     // Mesmo cookie válido, mas apresentado para outro grupo.
     const outro = await organizador.chamar(rotaGrupos.POST as Handler, {}, {
       metodo: "POST",
-      corpo: { nome: "Outro grupo", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" },
+      corpo: { nome: "Outro grupo", dataTroca: "2099-12-24", valorMinimo: "", valorMaximo: "", prazoCadastro: "" },
     });
     const intruso = new Navegador();
     intruso.cookies.set(`treno_${outro.json.id}`, original);

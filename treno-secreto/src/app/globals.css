@@ -1984,3 +1984,25 @@ textarea:focus {
     height: 22px;
   }
 }
+
+/* =========================================================== CAMPO DE DINHEIRO (R$ antes do número) */
+
+.campo-dinheiro {
+  position: relative;
+  display: block;
+}
+
+.campo-dinheiro i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-style: normal;
+  font-weight: 800;
+  color: var(--verde);
+  pointer-events: none;
+}
+
+.campo-dinheiro input {
+  padding-left: 44px;
+}

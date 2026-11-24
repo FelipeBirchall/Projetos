@@ -42,12 +42,37 @@ export type InfoGrupo = {
   id: string;
   nome: string;
   dataTroca: string;
+  /** Em centavos; null = sem limite. */
+  valorMinimo: number | null;
+  valorMaximo: number | null;
+  /** Texto livre de grupos antigos (antes da faixa mínimo/máximo). */
   valorSugerido: string;
   prazoCadastro: string | null;
   status: "aberto" | "sorteado";
   cadastroAberto: boolean;
   participantes: { nome: string }[];
 };
+
+/** 5000 → "R$ 50"; 4990 → "R$ 49,90". */
+export function formatarReais(centavos: number) {
+  return (centavos / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: centavos % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+/** Texto da faixa de valor do presente, ou "" se o grupo não definiu nenhuma. */
+export function faixaDeValor(g: Pick<InfoGrupo, "valorMinimo" | "valorMaximo" | "valorSugerido">) {
+  const { valorMinimo: min, valorMaximo: max } = g;
+  if (min != null && max != null) {
+    return min === max ? formatarReais(min) : `${formatarReais(min)} a ${formatarReais(max)}`;
+  }
+  if (min != null) return `A partir de ${formatarReais(min)}`;
+  if (max != null) return `Até ${formatarReais(max)}`;
+  return g.valorSugerido ?? "";
+}
 
 export class ErroApi extends Error {
   constructor(

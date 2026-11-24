@@ -6,7 +6,8 @@ export const POST = rota(async (req) => {
   const criado = await criarNovoGrupo({
     nome: texto(c.nome),
     dataTroca: texto(c.dataTroca),
-    valorSugerido: texto(c.valorSugerido),
+    valorMinimo: c.valorMinimo,
+    valorMaximo: c.valorMaximo,
     prazoCadastro: texto(c.prazoCadastro),
   });
   return ok(criado, 201);

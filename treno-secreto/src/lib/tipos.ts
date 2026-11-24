@@ -25,7 +25,11 @@ export type Grupo = {
   id: string;
   nome: string;
   dataTroca: string;
-  valorSugerido: string;
+  /** Faixa de valor do presente, em centavos (null = sem limite). */
+  valorMinimo?: number | null;
+  valorMaximo?: number | null;
+  /** Campo antigo, texto livre: só existe em grupos criados antes da faixa mínimo/máximo. */
+  valorSugerido?: string;
   prazoCadastro: string | null;
   criadoEm: string;
   adminTokenHash: string;
