@@ -32,7 +32,7 @@ async function novoGrupo(extra: Partial<{ prazoCadastro: string; dataTroca: stri
   return criarNovoGrupo({
     nome: "Grupo de Teste",
     dataTroca: extra.dataTroca ?? DATA_FUTURA,
-    valorSugerido: "R$ 50",
+    valorMinimo: 30, valorMaximo: 50,
     prazoCadastro: extra.prazoCadastro ?? "",
   });
 }
@@ -78,14 +78,14 @@ describe("criação do grupo (RN01, RN03)", () => {
   });
 
   it("valida nome, data e prazo", async () => {
-    await esperaErro(criarNovoGrupo({ nome: "A", dataTroca: DATA_FUTURA, valorSugerido: "", prazoCadastro: "" }), 400);
-    await esperaErro(criarNovoGrupo({ nome: "Grupo", dataTroca: "", valorSugerido: "", prazoCadastro: "" }), 400);
+    await esperaErro(criarNovoGrupo({ nome: "A", dataTroca: DATA_FUTURA, valorMinimo: "", valorMaximo: "", prazoCadastro: "" }), 400);
+    await esperaErro(criarNovoGrupo({ nome: "Grupo", dataTroca: "", valorMinimo: "", valorMaximo: "", prazoCadastro: "" }), 400);
     await esperaErro(
-      criarNovoGrupo({ nome: "Grupo", dataTroca: "24/12/2099", valorSugerido: "", prazoCadastro: "" }),
+      criarNovoGrupo({ nome: "Grupo", dataTroca: "24/12/2099", valorMinimo: "", valorMaximo: "", prazoCadastro: "" }),
       400,
     );
     await esperaErro(
-      criarNovoGrupo({ nome: "Grupo", dataTroca: "2099-12-01", valorSugerido: "", prazoCadastro: "2099-12-10" }),
+      criarNovoGrupo({ nome: "Grupo", dataTroca: "2099-12-01", valorMinimo: "", valorMaximo: "", prazoCadastro: "2099-12-10" }),
       400,
       "antes da data da troca",
     );

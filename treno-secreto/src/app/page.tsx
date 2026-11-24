@@ -16,7 +16,8 @@ import {
 export default function Inicio() {
   const [nome, setNome] = useState("");
   const [dataTroca, setDataTroca] = useState("");
-  const [valorSugerido, setValorSugerido] = useState("");
+  const [valorMinimo, setValorMinimo] = useState("");
+  const [valorMaximo, setValorMaximo] = useState("");
   const [prazoCadastro, setPrazoCadastro] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -27,11 +28,17 @@ export default function Inicio() {
   async function criar(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
+    const min = valorMinimo === "" ? null : Number(valorMinimo);
+    const max = valorMaximo === "" ? null : Number(valorMaximo);
+    if (min !== null && max !== null && min > max) {
+      setErro("O valor mínimo não pode ser maior que o valor máximo.");
+      return;
+    }
     setEnviando(true);
     try {
       const r = await api<{ id: string; adminToken: string }>("/api/grupos", {
         metodo: "POST",
-        corpo: { nome, dataTroca, valorSugerido, prazoCadastro },
+        corpo: { nome, dataTroca, valorMinimo, valorMaximo, prazoCadastro },
       });
       const novo = { id: r.id, nome, token: r.adminToken };
       const lista = [novo, ...lerGruposSalvos()];
@@ -120,24 +127,50 @@ export default function Inicio() {
               <input type="date" required value={dataTroca} onChange={(e) => setDataTroca(e.target.value)} />
             </label>
             <label className="campo">
-              <span>Valor sugerido</span>
+              <span>Data limite para se cadastrar (opcional)</span>
               <input
-                maxLength={30}
-                placeholder="Ex.: R$ 100"
-                value={valorSugerido}
-                onChange={(e) => setValorSugerido(e.target.value)}
+                type="date"
+                value={prazoCadastro}
+                max={dataTroca || undefined}
+                onChange={(e) => setPrazoCadastro(e.target.value)}
               />
             </label>
           </div>
-          <label className="campo">
-            <span>Data limite para se cadastrar (opcional)</span>
-            <input
-              type="date"
-              value={prazoCadastro}
-              max={dataTroca || undefined}
-              onChange={(e) => setPrazoCadastro(e.target.value)}
-            />
-          </label>
+          <div className="linha">
+            <label className="campo">
+              <span>Valor mínimo do presente</span>
+              <span className="campo-dinheiro">
+                <i aria-hidden="true">R$</i>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step={0.01}
+                  placeholder="Ex.: 50"
+                  value={valorMinimo}
+                  onChange={(e) => setValorMinimo(e.target.value)}
+                />
+              </span>
+            </label>
+            <label className="campo">
+              <span>Valor máximo do presente</span>
+              <span className="campo-dinheiro">
+                <i aria-hidden="true">R$</i>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step={0.01}
+                  placeholder="Ex.: 100"
+                  value={valorMaximo}
+                  onChange={(e) => setValorMaximo(e.target.value)}
+                />
+              </span>
+            </label>
+          </div>
+          <small className="texto-suave" style={{ marginTop: -6 }}>
+            Os dois valores são opcionais: preencha só um para indicar &quot;a partir de&quot; ou &quot;até&quot;.
+          </small>
           <Aviso tipo="erro">{erro}</Aviso>
           <button className="botao largo brilho" disabled={enviando}>
             {enviando ? (

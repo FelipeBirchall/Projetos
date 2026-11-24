@@ -25,7 +25,7 @@ async function esperaErro(promessa: Promise<unknown>, status: number) {
 }
 
 const novoGrupo = (nome: string) =>
-  criarNovoGrupo({ nome, dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+  criarNovoGrupo({ nome, dataTroca: "2099-12-24", valorMinimo: "", valorMaximo: "", prazoCadastro: "" });
 
 /** Liga o "modo Vercel": variáveis do Upstash + servidor Upstash simulado. */
 function ligarUpstash(opcoes?: { atrasoMaxMs?: number }) {

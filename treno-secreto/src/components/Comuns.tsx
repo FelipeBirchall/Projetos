@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { formatarData, type InfoGrupo } from "@/lib/cliente";
+import { faixaDeValor, formatarData, type InfoGrupo } from "@/lib/cliente";
 import {
   Floco,
   IconeAmpulheta,
@@ -94,14 +94,15 @@ export function AvisoSigilo({
 export function DetalhesGrupo({ grupo }: { grupo: InfoGrupo }) {
   let i = 0;
   const atraso = () => ({ "--i": i++ }) as React.CSSProperties;
+  const faixa = faixaDeValor(grupo);
   return (
     <div className="detalhes">
       <span className="etiqueta" style={atraso()}>
         <IconeCalendario tamanho={18} /> Troca: {formatarData(grupo.dataTroca)}
       </span>
-      {grupo.valorSugerido && (
+      {faixa && (
         <span className="etiqueta" style={atraso()}>
-          <IconeEtiquetaPreco tamanho={18} /> {grupo.valorSugerido}
+          <IconeEtiquetaPreco tamanho={18} /> {faixa}
         </span>
       )}
       {grupo.prazoCadastro && grupo.status === "aberto" && (
