@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Aviso, AvisoSigilo, Cabecalho, LinkCopiavel } from "@/components/Comuns";
-import { Avatar, Enfeite, Floco, IconeChave, IconeEstrela, IconeGorro, IconePresente } from "@/components/Icones";
+import { BolaNumerada, Enfeite, Floco, IconeChave, IconeEstrela, IconeGorro, IconePresente } from "@/components/Icones";
 import {
   api,
   CHAVE_GRUPOS_SALVOS,
@@ -178,7 +178,7 @@ export default function Inicio() {
         <ol className="passos">
           {passos.map((texto, i) => (
             <li key={i} style={{ "--i": i } as React.CSSProperties}>
-              <Avatar nome={String(i + 1) + ["a", "b", "c", "d"][i]} tamanho={34} />
+              <BolaNumerada numero={i + 1} />
               <span>{texto}</span>
             </li>
           ))}

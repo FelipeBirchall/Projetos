@@ -62,6 +62,7 @@ a {
 .camada {
   position: absolute;
   inset: 0;
+  will-change: transform;
   transform: translate3d(calc(var(--mx) * var(--f) * -1px), calc(var(--my) * var(--f) * -0.5px), 0);
   transition: transform 1.2s var(--suave);
 }
@@ -70,14 +71,13 @@ a {
 .aurora {
   position: absolute;
   inset: -10% -10% 40% -10%;
-  filter: blur(60px);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .aurora span {
   position: absolute;
   border-radius: 50%;
-  mix-blend-mode: screen;
+  will-change: transform;
 }
 
 .aurora-1 {
@@ -124,7 +124,6 @@ a {
   position: absolute;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
   animation: cintilar ease-in-out infinite alternate;
 }
 
@@ -132,8 +131,6 @@ a {
   border-radius: 0;
   background: #fff8d6;
   clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-  box-shadow: none;
-  filter: drop-shadow(0 0 4px #fff3b0);
   animation-name: cintilar-forte;
 }
 
@@ -210,7 +207,25 @@ a {
   box-shadow:
     0 0 40px 10px rgba(255, 238, 180, 0.35),
     0 0 120px 40px rgba(255, 238, 180, 0.12);
-  animation: lua-brilho 6s ease-in-out infinite alternate;
+}
+
+.lua::after {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 238, 180, 0.35), transparent);
+  animation: lua-halo 6s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+
+@keyframes lua-halo {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .cratera {
@@ -240,14 +255,6 @@ a {
   left: 62%;
 }
 
-@keyframes lua-brilho {
-  to {
-    box-shadow:
-      0 0 55px 16px rgba(255, 238, 180, 0.45),
-      0 0 160px 60px rgba(255, 238, 180, 0.16);
-  }
-}
-
 @media (max-width: 640px) {
   .lua {
     width: 60px;
@@ -267,7 +274,6 @@ a {
 
 .treno-balanco {
   animation: balanco-treno 2.6s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 240, 180, 0.7));
 }
 
 @keyframes voo-treno {
@@ -319,81 +325,11 @@ a {
 
 .nariz {
   animation: pisca-nariz 0.9s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 4px #ff4d5e);
 }
 
 @keyframes pisca-nariz {
   to {
     opacity: 0.4;
-  }
-}
-
-.rastro circle {
-  animation: rastro 0.9s ease-out infinite;
-}
-
-@keyframes rastro {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
-/* cordão de luzes */
-.cordao-luzes {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 40px;
-}
-
-.lampadas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  list-style: none;
-}
-
-.lampadas li {
-  position: absolute;
-  width: 10px;
-  height: 16px;
-  margin-left: -5px;
-  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
-  background: radial-gradient(circle at 40% 30%, #fff 0 12%, var(--cor) 45%);
-  box-shadow: 0 4px 16px 4px var(--cor);
-  animation: onda-luz 2.2s ease-in-out infinite;
-  transform-origin: 50% -3px;
-}
-
-.lampadas li::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 2px;
-  width: 6px;
-  height: 5px;
-  border-radius: 2px 2px 1px 1px;
-  background: #2f3a2c;
-}
-
-@keyframes onda-luz {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 4px 18px 5px var(--cor);
-    transform: rotate(-6deg);
-  }
-  50% {
-    opacity: 0.35;
-    box-shadow: 0 2px 4px 0 var(--cor);
-    transform: rotate(6deg);
   }
 }
 
@@ -407,9 +343,9 @@ a {
   position: absolute;
   top: -12px;
   border-radius: 50%;
-  background: #fff;
-  filter: blur(0.6px);
+  background: radial-gradient(circle, #fff 45%, rgba(255, 255, 255, 0) 70%);
   animation: nevar linear infinite;
+  will-change: transform;
 }
 
 @keyframes nevar {
@@ -423,7 +359,7 @@ a {
   top: -40px;
   color: #fff;
   animation: cair-cristal linear infinite;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+  will-change: transform;
 }
 
 .floco-giro {
@@ -471,7 +407,6 @@ a {
 
 .janela {
   animation: lareira 2.4s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 10px #ffcf6b);
 }
 
 @keyframes lareira {
@@ -529,7 +464,6 @@ a {
   transform-box: fill-box;
   transform-origin: center;
   animation: estrela-topo 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 6px #ffd23f);
 }
 
 @keyframes estrela-topo {
@@ -568,7 +502,7 @@ a {
   width: 100%;
   max-width: 760px;
   margin: 0 auto;
-  padding: 78px 18px 120px;
+  padding: 48px 18px 120px;
 }
 
 .rodape {
@@ -598,7 +532,6 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  filter: drop-shadow(0 4px 0 var(--vermelho-escuro)) drop-shadow(0 0 22px rgba(242, 193, 78, 0.35));
 }
 
 .logo a {
@@ -616,15 +549,12 @@ a {
 
 .letra {
   display: inline-block;
-  background: linear-gradient(110deg, #fff8ec 0%, #fff8ec 40%, #ffe7a3 50%, #fff8ec 60%, #fff8ec 100%);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation:
-    flutuar 3.2s ease-in-out infinite,
-    reflexo 6s linear infinite;
-  animation-delay: calc(var(--i) * 0.09s), calc(var(--i) * 0.05s);
+  color: #fff8ec;
+  text-shadow:
+    0 4px 0 var(--vermelho-escuro),
+    0 0 22px rgba(242, 193, 78, 0.45);
+  animation: flutuar 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.09s);
 }
 
 @keyframes flutuar {
@@ -637,18 +567,8 @@ a {
   }
 }
 
-@keyframes reflexo {
-  from {
-    background-position: 150% 0;
-  }
-  to {
-    background-position: -150% 0;
-  }
-}
-
 .logo .icone-treno {
   animation: voar 3.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px rgba(255, 210, 63, 0.5));
 }
 
 @keyframes voar {
@@ -670,7 +590,7 @@ a {
   position: relative;
   background: linear-gradient(180deg, #fffefa, var(--papel));
   border-radius: 22px;
-  padding: 32px 26px 26px;
+  padding: 50px 26px 26px;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.6) inset,
     0 22px 50px rgba(0, 0, 0, 0.38);
@@ -698,6 +618,27 @@ a {
   animation-delay: 0.6s;
 }
 
+/* neve acumulada com pingentes de gelo no topo do cartão */
+.cartao::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40'%3E %3Cpath d='M0 0H120V15.5c-7 5-15 2-21 5s-13 5-20 1-12-6-20-2-13 6-21 3S9 15.5 0 17.5Z' fill='%23b3cde8'/%3E %3Cpath d='M0 0H120V11c-7 5-15 2-21 5s-13 5-20 1-12-6-20-2-13 6-21 3S9 11 0 13Z' fill='%23eef5fd'/%3E %3Cg fill='%23e4f2ff' stroke='%23b9d5ee' stroke-width='.7' stroke-linejoin='round'%3E %3Cpath d='M13 14.5 16.5 32 20 15Z'/%3E%3Cpath d='M36 17 38.5 27 41 17.5Z'/%3E%3Cpath d='M58 18 62 39 66 18Z'/%3E %3Cpath d='M84 17.5 87 30 90 17Z'/%3E%3Cpath d='M104 14 106.5 22 109 14Z'/%3E%3C/g%3E %3Cg stroke='%23fff' stroke-width='.9' stroke-linecap='round'%3E%3Cpath d='M15.6 17v8'/%3E%3Cpath d='M60.6 21v11'/%3E%3Cpath d='M86.2 20v5'/%3E%3C/g%3E %3Cg fill='%23bcd6ee'%3E%3Ccircle cx='28' cy='5' r='1.1'/%3E%3Ccircle cx='72' cy='4' r='.9'/%3E%3Ccircle cx='97' cy='6' r='1'/%3E%3Ccircle cx='8' cy='6' r='.8'/%3E%3C/g%3E %3C/svg%3E") repeat-x 0 0 / 120px 40px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cartao.verde::before {
+  background-position-x: 40px;
+}
+
+.cartao.dourado::before {
+  background-position-x: 80px;
+}
+
 .cartao:hover {
   transform: translateY(-4px);
   box-shadow:
@@ -709,33 +650,11 @@ a {
   from {
     opacity: 0;
     transform: translateY(36px) scale(0.97);
-    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
-    filter: none;
   }
-}
-
-.cartao::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: repeating-linear-gradient(-45deg, var(--vermelho) 0 14px, #fff 14px 28px);
-  background-size: 39.6px 100%;
-  animation: listras 1.6s linear infinite;
-}
-
-.cartao.verde::before {
-  background-image: repeating-linear-gradient(-45deg, var(--verde) 0 14px, #fff 14px 28px);
-}
-
-.cartao.dourado::before {
-  background-image: repeating-linear-gradient(-45deg, var(--dourado) 0 14px, #fff 14px 28px);
 }
 
 @keyframes listras {
@@ -792,7 +711,7 @@ a {
 /* enfeite pendurado que balança */
 .enfeite {
   position: absolute;
-  top: 0;
+  top: 6px;
   right: 26px;
   display: flex;
   flex-direction: column;
@@ -1402,8 +1321,8 @@ textarea:focus {
 
 .passos li {
   display: grid;
-  grid-template-columns: 38px 1fr;
-  gap: 12px;
+  grid-template-columns: 48px 1fr;
+  gap: 14px;
   align-items: center;
   line-height: 1.45;
   animation: entrar-lado 0.6s var(--suave) backwards;
@@ -1831,4 +1750,104 @@ textarea:focus {
   .floco-giro {
     animation-name: balancar-floco;
   }
+}
+
+/* =========================================================== BOLAS NUMERADAS */
+
+.bola-numero {
+  display: block;
+  transform-origin: 50% 0;
+  animation: pendulo 3s ease-in-out infinite;
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.2));
+}
+
+.passos li:hover .bola-numero {
+  animation-duration: 0.9s;
+}
+
+/* =========================================================== MODO LEVE (aparelhos mais fracos) */
+
+.modo-leve .aurora,
+.modo-leve .estrela-cadente,
+.modo-leve .neve.perto,
+.modo-leve .floco:nth-of-type(2n) {
+  display: none;
+}
+
+.modo-leve .camada {
+  transform: none !important;
+  transition: none;
+  will-change: auto;
+}
+
+.modo-leve .estrela,
+.modo-leve .letra {
+  animation: none;
+}
+
+/* =========================================================== CARTA LACRADA (aviso de sigilo) */
+
+.carta-lacrada {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px 24px 18px 20px;
+  border-radius: 6px;
+  color: #5a4330;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 25px, rgba(201, 163, 106, 0.16) 25px 26px),
+    linear-gradient(135deg, #fffaf0 0%, #fbf0dc 60%, #f6e6c8 100%);
+  box-shadow:
+    0 1px 0 #fff inset,
+    0 10px 22px rgba(120, 80, 30, 0.14),
+    0 2px 4px rgba(120, 80, 30, 0.12);
+  outline: 1.5px dashed rgba(184, 138, 72, 0.55);
+  outline-offset: -7px;
+  transform: rotate(-0.6deg);
+  transition: transform 0.4s var(--mola);
+}
+
+/* canto da carta dobrado */
+.carta-lacrada::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  border-top-left-radius: 4px;
+  background: linear-gradient(135deg, #e9d3ab 0%, #f3e3c4 48%, var(--papel) 50%);
+  box-shadow: -2px -2px 4px rgba(120, 80, 30, 0.12);
+}
+
+.carta-lacrada:hover {
+  transform: rotate(0deg) translateY(-2px);
+}
+
+.selo-cera {
+  flex-shrink: 0;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 3px 3px rgba(90, 10, 20, 0.35));
+  transition: transform 0.5s var(--mola);
+}
+
+.carta-lacrada:hover .selo-cera {
+  transform: rotate(6deg) scale(1.06);
+}
+
+.carta-texto p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.carta-titulo {
+  display: block;
+  font-family: var(--fonte-titulo), cursive;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--vermelho);
+  margin-bottom: 2px;
 }

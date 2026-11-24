@@ -12,7 +12,7 @@ function gerador(semente: number) {
 }
 const r = gerador(2512);
 
-const ESTRELAS = Array.from({ length: 70 }, () => ({
+const ESTRELAS = Array.from({ length: 45 }, () => ({
   x: r() * 100,
   y: r() * 55,
   t: 1 + r() * 2.2,
@@ -21,7 +21,7 @@ const ESTRELAS = Array.from({ length: 70 }, () => ({
   brilho: r() > 0.88,
 }));
 
-const NEVE_LONGE = Array.from({ length: 70 }, () => ({
+const NEVE_LONGE = Array.from({ length: 45 }, () => ({
   x: r() * 100,
   t: 2 + r() * 3,
   dur: 14 + r() * 14,
@@ -30,7 +30,7 @@ const NEVE_LONGE = Array.from({ length: 70 }, () => ({
   o: 0.35 + r() * 0.4,
 }));
 
-const NEVE_PERTO = Array.from({ length: 16 }, () => ({
+const NEVE_PERTO = Array.from({ length: 10 }, () => ({
   x: r() * 100,
   t: 12 + r() * 14,
   dur: 10 + r() * 9,
@@ -40,20 +40,6 @@ const NEVE_PERTO = Array.from({ length: 16 }, () => ({
   o: 0.55 + r() * 0.4,
 }));
 
-const CORES_LUZES = ["#ff4d5e", "#ffd23f", "#3ddc84", "#4dabff", "#ff8cd9", "#b18cff"];
-const SEGMENTOS = 26;
-// Uma lâmpada no ponto mais baixo de cada curva do fio.
-const LAMPADAS = Array.from({ length: SEGMENTOS }, (_, i) => ({
-  x: ((i + 0.5) / SEGMENTOS) * 100,
-  y: 17,
-  cor: CORES_LUZES[i % CORES_LUZES.length],
-  i,
-}));
-const FIO = Array.from({ length: SEGMENTOS }, (_, s) => {
-  const x0 = (s * 1200) / SEGMENTOS;
-  const x1 = ((s + 1) * 1200) / SEGMENTOS;
-  return `M${x0} 4 Q${(x0 + x1) / 2} 30 ${x1} 4`;
-}).join(" ");
 
 function Pinheiro({ x, y, escala = 1, luzes = false }: { x: number; y: number; escala?: number; luzes?: boolean }) {
   return (
@@ -83,9 +69,48 @@ function Pinheiro({ x, y, escala = 1, luzes = false }: { x: number; y: number; e
 
 /** Céu de Natal animado, com parallax suave acompanhando o mouse. */
 export default function Cenario() {
+  // Modo leve: se o aparelho não sustenta ~40 quadros/s no começo, desligamos os efeitos mais caros.
+  useEffect(() => {
+    const raiz = document.documentElement;
+    if (sessionStorage.getItem("treno-leve") === "1") {
+      raiz.classList.add("modo-leve");
+      return;
+    }
+    // Mede duas janelas de 1,5 s. Abaixo de 10 quadros/s não é aparelho lento,
+    // é a aba pausada pelo navegador (minimizada, coberta etc.), então ignoramos.
+    const lento = (fps: number) => fps >= 10 && fps < 40;
+    const medicoes: number[] = [];
+    let quadros = 0;
+    let inicio = 0;
+    let id = 0;
+    const contar = (t: number) => {
+      if (!inicio) inicio = t;
+      quadros++;
+      if (t - inicio < 1500) {
+        id = requestAnimationFrame(contar);
+        return;
+      }
+      medicoes.push((quadros * 1000) / (t - inicio));
+      quadros = 0;
+      inicio = 0;
+      if (medicoes.length < 2) {
+        id = requestAnimationFrame(contar);
+      } else if (document.visibilityState === "visible" && medicoes.every(lento)) {
+        raiz.classList.add("modo-leve");
+        sessionStorage.setItem("treno-leve", "1");
+      }
+    };
+    // Espera a página assentar (fontes, animações de entrada) antes de medir.
+    const atraso = window.setTimeout(() => (id = requestAnimationFrame(contar)), 1500);
+    return () => {
+      window.clearTimeout(atraso);
+      cancelAnimationFrame(id);
+    };
+  }, []);
+
   useEffect(() => {
     const reduzir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduzir) return;
+    if (reduzir || window.matchMedia("(pointer: coarse)").matches) return;
     let quadro = 0;
     const raiz = document.documentElement;
     function mover(e: PointerEvent) {
@@ -140,11 +165,6 @@ export default function Cenario() {
       <div className="treno-voo">
         <div className="treno-balanco">
           <svg viewBox="0 0 300 80" width="300" height="80">
-            <g className="rastro">
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                <circle key={i} cx={-6 - i * 16} cy={52 + (i % 2) * 6} r={2.6 - i * 0.3} fill="#fff6c9" style={{ animationDelay: `${i * 0.12}s` }} />
-              ))}
-            </g>
             <g fill="#fff3c4" className="silhueta">
               {/* trenó */}
               <path d="M6 44h50c6 0 9-5 9-12h-5c0 4-2 6-5 6H14c-4 0-6-4-6-10H4c0 9 1 16 2 16z" />
@@ -177,17 +197,6 @@ export default function Cenario() {
         </div>
       </div>
 
-      <svg className="cordao-luzes" viewBox="0 0 1200 40" preserveAspectRatio="none">
-        <path d={FIO} stroke="#22301f" strokeWidth="2.2" fill="none" vectorEffect="non-scaling-stroke" />
-      </svg>
-      <ul className="lampadas">
-        {LAMPADAS.map((l) => (
-          <li
-            key={l.i}
-            style={{ left: `${l.x}%`, top: l.y, "--cor": l.cor, animationDelay: `${(l.i % 12) * 0.18}s` } as React.CSSProperties}
-          />
-        ))}
-      </ul>
 
       <div className="neve longe">
         {NEVE_LONGE.map((f, i) => (

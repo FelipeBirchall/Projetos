@@ -6,7 +6,7 @@ import { formatarData, type InfoGrupo } from "@/lib/cliente";
 import {
   Floco,
   IconeAmpulheta,
-  IconeCadeado,
+  SeloCera,
   IconeCalendario,
   IconeCheck,
   IconeEstrela,
@@ -72,11 +72,22 @@ export function Aviso({
   );
 }
 
-export function AvisoSigilo({ children }: { children: React.ReactNode }) {
+/** Aviso de sigilo em forma de carta lacrada com selo de cera. */
+export function AvisoSigilo({
+  children,
+  titulo = "Segredo bem guardado",
+}: {
+  children: React.ReactNode;
+  titulo?: string;
+}) {
   return (
-    <Aviso tipo="sucesso" icone={<IconeCadeado tamanho={20} />}>
-      {children}
-    </Aviso>
+    <div className="carta-lacrada" role="note">
+      <SeloCera />
+      <div className="carta-texto">
+        <strong className="carta-titulo">{titulo}</strong>
+        <p>{children}</p>
+      </div>
+    </div>
   );
 }
 

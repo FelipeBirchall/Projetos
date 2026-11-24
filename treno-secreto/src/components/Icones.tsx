@@ -318,6 +318,109 @@ export function Enfeite({ tipo, cor, atraso = 0 }: { tipo: TipoEnfeite; cor?: st
   );
 }
 
+// ------------------------------------------------------------ selo de cera (lacre da carta)
+
+/** Contorno irregular de cera derretida, calculado uma vez. */
+const CONTORNO_CERA = (() => {
+  const pontos = 40;
+  let d = "";
+  for (let i = 0; i < pontos; i++) {
+    const a = (i / pontos) * Math.PI * 2;
+    const r = 21 + 1.5 * Math.sin(i * 2.7) + 0.9 * Math.cos(i * 5.3);
+    d += `${i ? "L" : "M"}${(24 + Math.cos(a) * r).toFixed(2)} ${(24 + Math.sin(a) * r).toFixed(2)}`;
+  }
+  return d + "Z";
+})();
+
+export function SeloCera({ tamanho = 60 }: { tamanho?: number }) {
+  const id = useId();
+  return (
+    <svg className="selo-cera" width={tamanho} height={tamanho} viewBox="0 0 48 48" aria-hidden="true">
+      <defs>
+        <radialGradient id={`${id}c`} cx="38%" cy="32%" r="75%">
+          <stop offset="0" stopColor="#e8374f" />
+          <stop offset=".6" stopColor="#b5122b" />
+          <stop offset="1" stopColor="#7d0a1c" />
+        </radialGradient>
+      </defs>
+      {/* cera escorrida */}
+      <path d={CONTORNO_CERA} fill={`url(#${id}c)`} />
+      {/* anel prensado pelo carimbo */}
+      <circle cx="24" cy="24" r="14.5" fill="none" stroke="#7d0a1c" strokeWidth="1.6" opacity=".7" />
+      <circle cx="24" cy="24.8" r="14.5" fill="none" stroke="#ff8a98" strokeWidth=".7" opacity=".45" />
+      {/* floco de neve em relevo: sombra + luz */}
+      <g stroke="#6e0818" strokeWidth="1.7" strokeLinecap="round" fill="none" transform="translate(0 .5)">
+        {[0, 60, 120].map((a) => (
+          <g key={a} transform={`rotate(${a} 24 24)`}>
+            <path d="M24 14.5v19M24 18l-2.2-2.2M24 18l2.2-2.2M24 30l-2.2 2.2M24 30l2.2 2.2" />
+          </g>
+        ))}
+      </g>
+      <g stroke="#ffb3bd" strokeWidth=".8" strokeLinecap="round" fill="none" opacity=".75" transform="translate(-.4 -.5)">
+        {[0, 60, 120].map((a) => (
+          <g key={a} transform={`rotate(${a} 24 24)`}>
+            <path d="M24 14.5v19M24 18l-2.2-2.2M24 18l2.2-2.2M24 30l-2.2 2.2M24 30l2.2 2.2" />
+          </g>
+        ))}
+      </g>
+      {/* brilho da cera */}
+      <ellipse cx="15.5" cy="13.5" rx="4.5" ry="2.4" fill="#fff" opacity=".35" transform="rotate(-35 15.5 13.5)" />
+    </svg>
+  );
+}
+
+// ------------------------------------------------------------ bola de Natal com número
+
+const CORES_NUMERO: [string, string, string][] = [
+  ["#ff5a6e", "#b5122b", "#ffd36b"], // vermelha com detalhe dourado
+  ["#43c27a", "#146b37", "#ffffff"], // verde com detalhe branco
+  ["#7cc4ff", "#1f5fa8", "#ffffff"], // azul com detalhe branco
+  ["#ffe08a", "#c98f16", "#e0273f"], // dourada com detalhe vermelho
+  ["#c49bff", "#6b3fb5", "#ffd36b"], // roxa com detalhe dourado
+];
+
+export function BolaNumerada({ numero, tamanho = 46 }: { numero: number; tamanho?: number }) {
+  const id = useId();
+  const [claro, escuro, detalhe] = CORES_NUMERO[(numero - 1) % CORES_NUMERO.length];
+  return (
+    <svg className="bola-numero" width={tamanho} height={tamanho * 1.18} viewBox="0 0 44 52" aria-hidden="true">
+      <defs>
+        <radialGradient id={id} cx="35%" cy="32%" r="72%">
+          <stop offset="0" stopColor={claro} />
+          <stop offset="1" stopColor={escuro} />
+        </radialGradient>
+      </defs>
+      <path d="M22 0v5" stroke="#b88a1e" strokeWidth="1.4" />
+      <rect x="16.5" y="4" width="11" height="7" rx="2" fill="#e8c060" stroke="#b88a1e" />
+      <circle cx="22" cy="31" r="19" fill={`url(#${id})`} />
+      {/* pontinhos de brilho em volta */}
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+        <circle
+          key={a}
+          cx={22 + Math.cos((a * Math.PI) / 180) * 15}
+          cy={31 + Math.sin((a * Math.PI) / 180) * 15}
+          r="1.3"
+          fill={detalhe}
+          opacity=".9"
+        />
+      ))}
+      <ellipse cx="13" cy="21" rx="3" ry="5" fill="#fff" opacity=".45" transform="rotate(32 13 21)" />
+      <circle cx="22" cy="31" r="10.5" fill="#fff" stroke={detalhe} strokeWidth="1.4" />
+      <text
+        x="22"
+        y="36.6"
+        textAnchor="middle"
+        fontSize="15.5"
+        fontWeight="900"
+        fill={escuro}
+        fontFamily="var(--fonte-corpo), sans-serif"
+      >
+        {numero}
+      </text>
+    </svg>
+  );
+}
+
 // ------------------------------------------------------------ avatar em forma de bola de Natal
 
 const PALETA_AVATAR = [
