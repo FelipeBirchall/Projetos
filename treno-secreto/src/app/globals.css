@@ -1851,3 +1851,136 @@ textarea:focus {
   color: var(--vermelho);
   margin-bottom: 2px;
 }
+
+/* =========================================================== CARTINHA AO PAPAI NOEL (lista revelada) */
+
+.carta-noel {
+  --linha: 1.9rem;
+  position: relative;
+  max-width: 540px;
+  margin: 18px auto 0;
+  padding: 22px 24px 18px 48px;
+  text-align: left;
+  color: #4a3526;
+  line-height: var(--linha);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--linha) - 1px),
+      rgba(110, 145, 190, 0.28) calc(var(--linha) - 1px) var(--linha)
+    )
+    0 22px / 100% var(--linha),
+    linear-gradient(135deg, #fffaf0 0%, #fbf0da 70%, #f5e4c4 100%);
+  box-shadow:
+    0 14px 28px rgba(120, 80, 30, 0.18),
+    0 2px 4px rgba(120, 80, 30, 0.12);
+  transform: rotate(0.8deg);
+  animation: entrar 0.8s 0.9s var(--suave) backwards;
+}
+
+/* margem vermelha de caderno */
+.carta-noel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 34px;
+  width: 2px;
+  background: rgba(200, 16, 46, 0.35);
+}
+
+.carta-noel p {
+  margin: 0;
+}
+
+.carta-noel-saudacao {
+  font-family: var(--fonte-titulo), cursive;
+  font-size: 1.7rem;
+  color: var(--vermelho);
+}
+
+.carta-noel-lista {
+  list-style: none;
+  margin: 4px 0;
+}
+
+.carta-noel-lista li {
+  position: relative;
+  padding-left: 24px;
+  font-weight: 700;
+  color: #3a2a1e;
+  animation: entrar-lado 0.5s var(--suave) backwards;
+  animation-delay: calc(0.4s + var(--i, 0) * 0.08s);
+}
+
+/* estrelinha dourada no lugar do marcador */
+.carta-noel-lista li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: calc(var(--linha) / 2 - 7px);
+  width: 14px;
+  height: 14px;
+  background: #e8b42a;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.carta-noel-despedida {
+  margin-top: 6px !important;
+  font-style: italic;
+}
+
+.carta-noel-assinatura {
+  font-family: var(--fonte-titulo), cursive;
+  font-size: 2rem;
+  color: var(--verde);
+  text-align: right;
+  padding-right: 8px;
+}
+
+/* selo dos correios do Polo Norte */
+.carta-noel-selo {
+  float: right;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 58px;
+  margin: -6px -8px 6px 12px;
+  padding: 6px 4px 4px;
+  background: #fff;
+  border: 2px dashed #e0a3ad;
+  outline: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: rotate(7deg);
+  line-height: 1;
+}
+
+.carta-noel-selo small {
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vermelho);
+}
+
+@media (max-width: 560px) {
+  .carta-noel {
+    padding-left: 40px;
+    padding-right: 18px;
+  }
+  .carta-noel::before {
+    left: 28px;
+  }
+  .carta-noel-saudacao {
+    font-size: 1.4rem;
+  }
+  .carta-noel-selo {
+    width: 46px;
+    margin: -4px -6px 4px 8px;
+  }
+  .carta-noel-selo .icone {
+    width: 22px;
+    height: 22px;
+  }
+}

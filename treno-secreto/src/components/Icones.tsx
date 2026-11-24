@@ -47,12 +47,27 @@ export function IconePresente(p: P) {
   );
 }
 
+/** Chave mágica do Polo Norte: dourada e antiga, com floco de neve na argola e laço vermelho. */
 export function IconeChave(p: P) {
   return (
     <Svg {...p}>
-      <circle cx="7.5" cy="12" r="4.3" fill="none" stroke="#F4C443" strokeWidth="2.6" />
-      <path d="M11.8 12H21m-3 0v3.2m-2.7-3.2v2.2" stroke="#F4C443" strokeWidth="2.6" strokeLinecap="round" fill="none" />
-      <circle cx="7.5" cy="12" r="1.2" fill="#D9A21E" />
+      <g transform="rotate(35 12 12)">
+        {/* haste e dentes */}
+        <rect x="10.9" y="9.2" width="2.2" height="12.6" rx="1.1" fill="#E8B42A" stroke="#B88A1E" strokeWidth=".5" />
+        <path d="M13 17.2h2.9v1.5H13zM13 19.6h2v1.4h-2z" fill="#E8B42A" stroke="#B88A1E" strokeWidth=".5" />
+        {/* argola ornamentada */}
+        <circle cx="12" cy="5.6" r="4.2" fill="#FFF6D6" stroke="#E8B42A" strokeWidth="2" />
+        <circle cx="12" cy="5.6" r="4.2" fill="none" stroke="#B88A1E" strokeWidth=".5" />
+        <g stroke="#7FB2E0" strokeWidth=".9" strokeLinecap="round">
+          <path d="M12 3.6v4M10.27 4.6l3.46 2M10.27 6.6l3.46-2" />
+        </g>
+        {/* laço vermelho amarrado na haste */}
+        <path d="M12 10.3c-2.2-2-4.4-1.2-4 .4.4 1.3 2.6 1.1 4-.4zm0 0c2.2-2 4.4-1.2 4 .4-.4 1.3-2.6 1.1-4-.4z" fill="#E0273F" />
+        <path d="M11.6 10.6 10.4 14l1.1-.5.6 1zM12.4 10.6l1.2 3.4-1.1-.5-.6 1z" fill="#B5122B" />
+        <circle cx="12" cy="10.4" r=".9" fill="#B5122B" />
+        {/* brilho */}
+        <path d="M11.5 12v6" stroke="#FFF1B8" strokeWidth=".6" strokeLinecap="round" opacity=".8" />
+      </g>
     </Svg>
   );
 }
@@ -72,14 +87,23 @@ export function IconeCalendario(p: P) {
   );
 }
 
-export function IconeSaco(p: P) {
+/** Etiqueta de presente (papel kraft, barbante vermelho e azevinho) com o valor "R$". */
+export function IconeEtiquetaPreco(p: P) {
   return (
     <Svg {...p}>
-      <path d="M8 8.5h8l1 1.5c3 2.5 4 5.5 3 8.5-.8 2.2-3 2.8-8 2.8s-7.2-.6-8-2.8c-1-3 0-6 3-8.5z" fill="#C98A3E" />
-      <path d="M8.5 8.5 7 4.5c2 .8 3.3.8 5 0 1.7.8 3 .8 5 0l-1.5 4z" fill="#B47530" />
-      <rect x="7.6" y="7.6" width="8.8" height="1.9" rx=".95" fill="#E0273F" />
-      <circle cx="12" cy="15.2" r="3.4" fill="#F4C443" stroke="#D9A21E" strokeWidth=".7" />
-      <path d="M12 13.2v4" stroke="#A86B1F" strokeWidth="1.3" strokeLinecap="round" />
+      {/* barbante */}
+      <path d="M6.2 9.6C3.4 7.6 2.2 4.6 3.6 2.4" stroke="#E0273F" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <g transform="rotate(-16 12 13)">
+        <path d="M7.6 6.5h11.2a1.8 1.8 0 0 1 1.8 1.8v10.4a1.8 1.8 0 0 1-1.8 1.8H7.6L3.6 13.4z" fill="#E6C48F" stroke="#B8894A" strokeWidth=".8" strokeLinejoin="round" />
+        <path d="M9.4 8.6v9.6" stroke="#C9A06A" strokeWidth=".7" strokeDasharray="1 1.1" />
+        <circle cx="6.6" cy="13.4" r="1.2" fill="#FFF8EC" stroke="#B8894A" strokeWidth=".6" />
+        <text x="15" y="16" textAnchor="middle" fontSize="6.4" fontWeight="900" fill="#C8102E" fontFamily="var(--fonte-corpo), sans-serif">
+          R$
+        </text>
+        {/* azevinho no canto */}
+        <path d="M17.6 8.6c-1.2-1.4-3-1-2.8.2.7.2 1.8.2 2.8-.2zm0 0c1.4-1.2 1.4-3 .2-3.1-.5.6-.6 1.8-.2 3.1z" fill="#1E7A42" />
+        <circle cx="18.2" cy="9.2" r=".9" fill="#E0273F" />
+      </g>
     </Svg>
   );
 }
