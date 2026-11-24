@@ -49,13 +49,13 @@ Sem o Upstash conectado, o site avisa "Armazenamento não configurado" em vez de
 npm test
 ```
 
-São 71 testes automatizados (Vitest), divididos em cinco arquivos dentro de `testes/`:
+São 73 testes automatizados (Vitest), divididos em cinco arquivos dentro de `testes/`:
 
 - `sorteio.test.ts`: ninguém tira a si mesmo, o sorteio forma um ciclo único, casais nunca se tiram, sorteios impossíveis são detectados e não há viés estatístico.
 - `cripto.test.ts`: só a senha certa abre o resultado, um participante não abre o de outro e nada fica em texto puro.
 - `regras.test.ts`: todas as regras de negócio (RN01–RN21), incluindo prazo, bloqueio por tentativas, fluxo de senha esquecida, cadastros simultâneos e a verificação de que o JSON não revela os pares.
 - `api.test.ts`: as rotas HTTP com cookies reais, cobrindo cookie adulterado, expirado ou de outro grupo, token de organizador errado, logout e respostas sem vazamentos.
-- `armazenamento.test.ts`: o modo Redis da Vercel, com um Redis simulado que força gravações simultâneas, o controle de versão e a configuração sem Upstash.
+- `armazenamento.test.ts`: o modo Redis da Vercel usando o cliente Upstash real contra um servidor simulado (`upstash-falso.ts`), que executa o script Lua de gravação de verdade (via fengari) e força gravações simultâneas.
 
 Os testes usam uma pasta temporária e nunca mexem em `data/`.
 

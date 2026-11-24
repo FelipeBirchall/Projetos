@@ -3,52 +3,16 @@ import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   atualizarGrupo,
-  type ClienteRedis,
-  criarMotorRedis,
   definirMotor,
   lerGrupo,
   type Motor,
   motorArquivo,
   PASTA_DADOS,
 } from "@/lib/armazenamento";
-import { cadastrar, criarNovoGrupo, painelAdmin, revelarAmigo, sortear } from "@/lib/regras";
+import { cadastrar, criarNovoGrupo, entrar, obterInfoPublica, painelAdmin, revelarAmigo, sortear } from "@/lib/regras";
 import type { Sessao } from "@/lib/sessao";
 import { ErroNegocio } from "@/lib/tipos";
-
-const pausa = () => new Promise((r) => setTimeout(r, Math.random() * 8));
-
-/**
- * Redis de mentira que imita o script de gravação (compara a versão e grava),
- * com atrasos aleatórios para forçar o entrelaçamento de gravações simultâneas,
- * como várias instâncias da Vercel atendendo ao mesmo tempo.
- */
-function redisFalso() {
-  const dados = new Map<string, { dados: string; versao: string }>();
-  const expiracao = new Map<string, number>();
-  const stats = { gravacoes: 0, conflitos: 0 };
-  const cliente = {
-    async hgetall(chave: string) {
-      await pausa();
-      const r = dados.get(chave);
-      return r ? { ...r } : null;
-    },
-    async eval(_script: string, chaves: string[], args: string[]) {
-      await pausa();
-      const [json, esperada, nova, expira] = args;
-      const atual = dados.get(chaves[0]);
-      const ok = esperada === "novo" ? !atual : atual?.versao === esperada;
-      if (!ok) {
-        stats.conflitos++;
-        return 0;
-      }
-      dados.set(chaves[0], { dados: json, versao: nova });
-      expiracao.set(chaves[0], Number(expira));
-      stats.gravacoes++;
-      return 1;
-    },
-  } as unknown as ClienteRedis;
-  return { cliente, dados, expiracao, stats };
-}
+import { criarUpstashFalso } from "./upstash-falso";
 
 async function esperaErro(promessa: Promise<unknown>, status: number) {
   const erro = await promessa.then(
@@ -60,30 +24,67 @@ async function esperaErro(promessa: Promise<unknown>, status: number) {
   return erro as ErroNegocio;
 }
 
+const novoGrupo = (nome: string) =>
+  criarNovoGrupo({ nome, dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+
+/** Liga o "modo Vercel": variáveis do Upstash + servidor Upstash simulado. */
+function ligarUpstash(opcoes?: { atrasoMaxMs?: number }) {
+  const upstash = criarUpstashFalso(opcoes);
+  vi.stubEnv("KV_REST_API_URL", "https://exemplo-falso.upstash.io");
+  vi.stubEnv("KV_REST_API_TOKEN", "token-falso");
+  vi.stubGlobal("fetch", upstash.fetch);
+  definirMotor(null); // força o site a escolher o motor de novo, exatamente como em produção
+  return upstash;
+}
+
 afterEach(() => {
   definirMotor(null);
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
-describe("armazenamento no Redis (Vercel)", () => {
-  let redis: ReturnType<typeof redisFalso>;
+describe("modo Vercel: cliente Upstash real + servidor simulado + script Lua de verdade", () => {
+  let upstash: ReturnType<typeof criarUpstashFalso>;
 
   beforeEach(() => {
-    redis = redisFalso();
-    definirMotor(criarMotorRedis(redis.cliente));
+    upstash = ligarUpstash();
   });
 
-  it("guarda o grupo no Redis, não em arquivo, e define a expiração 90 dias após a troca", async () => {
-    const { id } = await criarNovoGrupo({ nome: "Natal Redis", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
-    expect(redis.dados.has(`treno:grupo:${id}`)).toBe(true);
+  it("regressão: o grupo recém-criado é encontrado ao abrir o link (bug do 'Grupo não encontrado')", async () => {
+    const { id } = await novoGrupo("Natal Vercel");
+    const info = await obterInfoPublica(id);
+    expect(info.nome).toBe("Natal Vercel");
+    expect(upstash.stats.comandos).toContain("hget");
+  });
+
+  it("guarda no Redis (não em arquivo) e expira 90 dias após a troca", async () => {
+    const { id } = await novoGrupo("Natal Redis");
+    expect(upstash.banco.has(`treno:grupo:${id}`)).toBe(true);
     expect(existsSync(path.join(PASTA_DADOS, "grupos", `${id}.json`))).toBe(false);
-    const esperado = Date.parse("2099-12-24T23:59:59Z") / 1000 + 90 * 86400;
-    expect(redis.expiracao.get(`treno:grupo:${id}`)).toBe(Math.floor(esperado));
-    expect((await lerGrupo(id)).nome).toBe("Natal Redis");
+    const esperado = Math.floor(Date.parse("2099-12-24T23:59:59Z") / 1000) + 90 * 86400;
+    expect(upstash.expiraEm.get(`treno:grupo:${id}`)).toBe(esperado);
   });
 
-  it("cadastros simultâneos em 'servidores diferentes' não se perdem", async () => {
-    const { id } = await criarNovoGrupo({ nome: "Concorrência", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+  it("fluxo completo: cadastro, login, sorteio, revelação simultânea e sigilo", async () => {
+    const { id, adminToken } = await novoGrupo("Fluxo");
+    const sessoes: Sessao[] = [];
+    for (const nome of ["Ana", "Bruno", "Carla", "Diego"]) {
+      const r = await cadastrar(id, nome, `s-${nome}`);
+      sessoes.push({ grupoId: id, participanteId: r.participanteId, chave: r.chave });
+    }
+    await expect(entrar(id, "Ana", "s-Ana")).resolves.toHaveProperty("participanteId");
+    await sortear(id, adminToken);
+    const tirados = await Promise.all(sessoes.map((s) => revelarAmigo(id, s)));
+    expect(new Set(tirados.map((t) => t.nome)).size).toBe(4);
+    const painel = await painelAdmin(id, adminToken);
+    expect(painel.participantes.every((p) => p.visualizou)).toBe(true); // nenhuma marcação se perdeu
+    const bruto = upstash.banco.get(`treno:grupo:${id}`)!.get("dados")!;
+    expect(bruto).not.toContain(adminToken);
+    expect(bruto).not.toMatch(/"(amigoId|tirou|pares)"/);
+  });
+
+  it("cadastros simultâneos não se perdem", async () => {
+    const { id } = await novoGrupo("Concorrência");
     const nomes = Array.from({ length: 10 }, (_, i) => `Pessoa ${i + 1}`);
     await Promise.all(nomes.map((n) => cadastrar(id, n, "senha123")));
     const g = await lerGrupo(id);
@@ -91,8 +92,8 @@ describe("armazenamento no Redis (Vercel)", () => {
     expect(g.versao).toBe(1 + nomes.length);
   });
 
-  it("25 alterações disparadas ao mesmo tempo: há conflitos, e todos são resolvidos sem perder nada", async () => {
-    const { id } = await criarNovoGrupo({ nome: "Disputa", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+  it("25 alterações ao mesmo tempo: o script Lua recusa conflitos e nada se perde", async () => {
+    const { id } = await novoGrupo("Disputa");
     const marcas = Array.from({ length: 25 }, (_, i) => `m${i}`);
     await Promise.all(
       marcas.map((m) =>
@@ -104,49 +105,41 @@ describe("armazenamento no Redis (Vercel)", () => {
     const g = await lerGrupo(id);
     expect(g.exclusoes.map(([m]) => m).sort()).toEqual([...marcas].sort());
     expect(g.versao).toBe(26);
-    expect(redis.stats.conflitos).toBeGreaterThan(0); // o caminho de conflito foi exercitado de verdade
+    expect(upstash.stats.conflitos).toBeGreaterThan(0); // o caminho de conflito foi exercitado de verdade
   }, 30_000);
 
-  it("fluxo completo funciona sobre o Redis: sorteio, revelação e sigilo", async () => {
-    const { id, adminToken } = await criarNovoGrupo({ nome: "Fluxo", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
-    const sessoes: Sessao[] = [];
-    for (const nome of ["Ana", "Bruno", "Carla", "Diego"]) {
-      const r = await cadastrar(id, nome, `s-${nome}`);
-      sessoes.push({ grupoId: id, participanteId: r.participanteId, chave: r.chave });
-    }
-    await sortear(id, adminToken);
-    const tirados = await Promise.all(sessoes.map((s) => revelarAmigo(id, s))); // revelações simultâneas
-    expect(new Set(tirados.map((t) => t.nome)).size).toBe(4);
-    const painel = await painelAdmin(id, adminToken);
-    expect(painel.participantes.every((p) => p.visualizou)).toBe(true); // nenhuma marcação se perdeu
-    const bruto = redis.dados.get(`treno:grupo:${id}`)!.dados;
-    expect(bruto).not.toContain(adminToken);
-    expect(bruto).not.toMatch(/"(amigoId|tirou|pares)"/);
-  });
-
   it("erro de regra de negócio não grava nada", async () => {
-    const { id } = await criarNovoGrupo({ nome: "Sem gravação", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
-    const antes = redis.stats.gravacoes;
+    const { id } = await novoGrupo("Sem gravação");
+    const antes = upstash.stats.gravacoes;
     await esperaErro(cadastrar(id, "A", "1234"), 400);
-    expect(redis.stats.gravacoes).toBe(antes);
+    expect(upstash.stats.gravacoes).toBe(antes);
   });
 
-  it("não sobrescreve um grupo que já existe com o mesmo id", async () => {
-    const m = criarMotorRedis(redis.cliente);
-    const { id } = await criarNovoGrupo({ nome: "Original", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+  it("o script não deixa criar um grupo por cima de outro com o mesmo id", async () => {
+    const { id } = await novoGrupo("Original");
     const g = await lerGrupo(id);
-    expect(await m.gravar({ ...g, nome: "Impostor" }, null)).toBe(false);
+    await esperaErro(
+      (async () => {
+        const { criarGrupo } = await import("@/lib/armazenamento");
+        await criarGrupo({ ...g, nome: "Impostor" });
+      })(),
+      409,
+    );
     expect((await lerGrupo(id)).nome).toBe("Original");
+  });
+
+  it("grupo inexistente continua dando 404", async () => {
+    await esperaErro(lerGrupo("zzzzzzzzzz"), 404);
   });
 });
 
 describe("controle de versão", () => {
   it("desiste com 503 se os conflitos não param (em vez de travar ou gravar por cima)", async () => {
-    const redis = redisFalso();
-    const base = criarMotorRedis(redis.cliente);
-    definirMotor(base);
-    const { id } = await criarNovoGrupo({ nome: "Teimoso", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
-    const sempreConflito: Motor = { nome: "conflito", ler: (i) => base.ler(i), gravar: async () => false };
+    ligarUpstash({ atrasoMaxMs: 0 });
+    const { id } = await novoGrupo("Teimoso");
+    const grupo = await lerGrupo(id);
+    // Motor que sempre responde "outra pessoa gravou antes".
+    const sempreConflito: Motor = { nome: "conflito", ler: async () => structuredClone(grupo), gravar: async () => false };
     definirMotor(sempreConflito);
     const erro = await esperaErro(
       atualizarGrupo(id, (g) => {
@@ -159,7 +152,7 @@ describe("controle de versão", () => {
 
   it("arquivos antigos, sem o campo de versão, continuam funcionando", async () => {
     definirMotor(motorArquivo);
-    const { id } = await criarNovoGrupo({ nome: "Antigo", dataTroca: "2099-12-24", valorSugerido: "", prazoCadastro: "" });
+    const { id } = await novoGrupo("Antigo");
     const arquivo = path.join(PASTA_DADOS, "grupos", `${id}.json`);
     const bruto = JSON.parse(await fs.readFile(arquivo, "utf8"));
     delete bruto.versao; // como os grupos criados antes desta mudança
