@@ -103,15 +103,18 @@ function expiraEm(grupo: Grupo) {
 }
 
 /** O pedaço do cliente Redis que usamos (facilita testar com um Redis de mentira). */
-export type ClienteRedis = Pick<Redis, "hgetall" | "eval">;
+export type ClienteRedis = Pick<Redis, "hget" | "eval">;
 
 export function criarMotorRedis(redis: ClienteRedis): Motor {
   return {
     nome: "redis",
     async ler(id) {
-      const r = await redis.hgetall<{ dados: string; versao: string }>(chave(id));
-      if (!r || typeof r.dados !== "string") return null;
-      return JSON.parse(r.dados) as Grupo;
+      // hget devolve só o campo "dados": o texto JSON exatamente como gravamos.
+      // (Evitamos hgetall: sem desserialização automática ele devolve uma lista [campo, valor, ...].)
+      const dados = await redis.hget<unknown>(chave(id), "dados");
+      if (dados === null || dados === undefined) return null;
+      // Defesa extra: se alguém ligar a desserialização automática, o valor já vem como objeto.
+      return (typeof dados === "string" ? JSON.parse(dados) : dados) as Grupo;
     },
     async gravar(grupo, versaoEsperada) {
       const ok = await redis.eval(
